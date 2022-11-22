@@ -1,7 +1,7 @@
 /*
 	TO DO:
 		- Fix start, end and game over screen;
-		- Add angling on player hit;
+		- Adjust angling on player hit;
 		- Organize everything;
 		- Create more levels;
 		-- Add more features;
@@ -16,8 +16,9 @@ var listofblock = [];
 function Ball(p){
 	this.size = canvas.width/110;
 	this.x = p.x + p.w/2, this.y = p.y - this.size;
-	this.baseBallSpeed = this.ballSpeedX = this.ballSpeedY = this.size*.8;
+	this.baseBallSpeed = this.ballSpeedX = this.ballSpeedY = (canvas.width/100);
 	this.ballSpeedY *= -1;
+	this.baseBallSpeed = this.baseBallSpeed.toFixed(4);
 	
 	listofball[listofball.length] = this;
 	
@@ -57,10 +58,10 @@ function Ball(p){
 		
 		// Collision with player:
 		if( (this.y+this.size>=square.y && this.y-this.size <= square.y+square.h) && (this.x+this.size>=square.x && this.x-this.size<=square.x+square.w) && this.ballSpeedY>0){
-			if( (this.x < square.x + square.w/2 && this.ballSpeedX > 0) || (this.x > square.x + square.w/2 && this.ballSpeedX < 0) ){
-				this.ballSpeedX *= -1
-			}
-			this.ballSpeedY *= -1;
+			var angle = (square.x+square.w/2-this.x)/(square.w/2);
+			this.ballSpeedX = -angle*this.baseBallSpeed;
+			
+			this.ballSpeedY = -Math.sqrt(Math.pow(this.baseBallSpeed,2)-Math.pow(Math.abs(this.ballSpeedX), 2));
 		}
 		
 		this.drawBall();
