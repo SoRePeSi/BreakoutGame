@@ -1,13 +1,17 @@
 /*
 	TO DO:
-		- Fix start, end and game over screen;
+		- Make level change (and fix the bug that makes the player tremble in place instead of moving)
+		- Fix bug that makes player and ball faster on every reset;
+		Note: ball ignores collision with block if it is moving too vertically;
 		- Adjust angling on player hit;
-		- Organize everything;
+		- Organize code;
 		- Create more levels;
 		-- Add more features;
 		-- Upon creation, make ball immobile until player moves.
+		
+		Not necessarily in this order
 */
-var score = 0, currentLevel = 0, lives = 3;
+var score = 0, currentLevel = 0, lives = 1;
 var gameon = false;
 
 var listofball = [];
@@ -40,16 +44,6 @@ function Ball(p){
 		// Collision with floor:
 		if(this.y - this.size/2 >= canvas.height){
 			listofball.splice(listofball.indexOf(this));
-			if(listofball.length == 0){
-				lives--;
-				document.getElementById("teste").innerHTML = lives;
-				if(lives == -1){
-					GameOverScreen();
-				}
-				else{
-					b = new Ball(square);
-				}
-			}
 		}
 		// Collision with walls:
 		if( (this.x<=0 && this.ballSpeedX<0) || (this.x>=canvas.width && this.ballSpeedX>0) ){
@@ -142,16 +136,20 @@ function createLevel(level){
 
 
 function StartScreen(){
-	
+	window.addEventListener("keydown", function(event){
+		if(event.keyCode == 32) GameScreen();
+	});
 }
 
 var square, b;
 
 function GameScreen(){
 	square = new Square();
+	square.x = canvas.width*.45, square.y = canvas.height*.85, square.w = canvas.width/8, square.h = canvas.height/30;
 	square.drawSquare();
 
 	b = new Ball(square);
+	b.baseBallSpeed = b.ballSpeedX = b.ballSpeedY = (canvas.width/100);
 	b.drawBall();
 	
 	try{
@@ -179,6 +177,7 @@ function GameScreen(){
 	
 	createLevel(currentLevel);
 	gameon = true;
+	animate();
 }
 
 function GameOverScreen(){
@@ -186,15 +185,20 @@ function GameOverScreen(){
 	listofball.length = 0;
 	listofblock.length = 0;
 	
-	window.removeEventListener("keydown", keyPressed);
-	window.removeEventListener("keyup", keyReleased);
+	try{
+		window.removeEventListener("keydown", keyPressed);
+		window.removeEventListener("keyup", keyReleased);
+	}catch{}
 	
-	window.addEventListener("kedown", function restartQuit(event){
-		var presssedKey = event.keyCode;
+	window.addEventListener("keydown", function restartQuit(event){
+		var pressedKey = event.keyCode;
 		if(pressedKey == 114 || pressedKey == 82){
+			document.getElementById("teste").innerHTML = "To Game Screen";
+			lives = 1;
 			GameScreen();
 		}
 		if(pressedKey == 113 || pressedKey == 81){
+			document.getElementById("teste").innerHTML = "To Start Screen";
 			StartScreen();
 		}
 	});
@@ -220,6 +224,17 @@ function updateAllBalls(){
 	for(var i=0; i<listofball.length; i++){
 		listofball[i].updateBall();
 	}
+
+	if(listofball.length == 0){
+		lives--;
+		document.getElementById("teste").innerHTML = lives;
+		if(lives < 0){
+			GameOverScreen();
+		}
+		else{
+			b = new Ball(square);
+		}
+	}
 }
 
 function animate(){
@@ -233,5 +248,4 @@ function animate(){
 	}
 }
 
-GameScreen();
-animate();
+StartScreen();
